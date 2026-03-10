@@ -4,39 +4,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BRASILEIRÃO ARENA 2026 - FIX TOTAL</title>
+    <title>BRASILEIRÃO PENALTY STRIKE 2026 - PROTOCOLO DE ENGENHARIA</title>
     <style>
         :root {
-            --primary: #00ff88;
+            --neon-green: #00ff88;
+            --pitch: #164018;
+            --hud-bg: rgba(0, 0, 0, 0.85);
+            --p-color: #00ff88;
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         body {
             background: #000;
             color: #fff;
             overflow: hidden;
-        }
-
-        #game-container {
-            position: relative;
-            width: 100vw;
             height: 100vh;
-            background: #0a0a0a;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
+        #container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            max-width: 1280px;
+            max-height: 720px;
+            border: 2px solid #333;
+            overflow: hidden;
+        }
+
         canvas {
-            background: #1a3d1d;
-            border: 4px solid #fff;
             display: block;
+            background: var(--pitch);
+            cursor: none;
         }
 
         .screen {
@@ -45,13 +52,14 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.9);
+            background: rgba(0, 0, 0, 0.95);
             z-index: 100;
             display: none;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             text-align: center;
+            padding: 20px;
         }
 
         .screen.active {
@@ -59,324 +67,569 @@
         }
 
         h1 {
-            font-size: 3rem;
+            font-size: 3.5rem;
+            font-weight: 900;
+            color: #fff;
+            text-transform: uppercase;
             margin-bottom: 2rem;
         }
 
         h1 span {
-            color: var(--primary);
+            color: var(--neon-green);
         }
 
         .team-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(5, 1fr);
             gap: 10px;
-            padding: 20px;
+            width: 90%;
+            max-width: 900px;
             max-height: 400px;
             overflow-y: auto;
             background: #111;
+            padding: 20px;
+            border-radius: 10px;
         }
 
         .team-btn {
-            padding: 15px;
-            border: none;
             background: #222;
+            border: 2px solid transparent;
             color: #fff;
+            padding: 15px;
             font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            border-radius: 5px;
+            text-transform: uppercase;
+        }
+
+        .team-btn:hover {
+            border-color: var(--neon-green);
+            transform: translateY(-3px);
+        }
+
+        .diff-selector {
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 15px;
+        }
+
+        .diff-btn {
+            background: #333;
+            border: 2px solid transparent;
+            color: #fff;
+            padding: 10px 20px;
+            font-weight: 800;
             cursor: pointer;
             border-radius: 5px;
         }
 
-        .team-btn:hover {
-            background: var(--primary);
-            color: #000;
+        .diff-btn.active {
+            border-color: var(--neon-green);
+            background: rgba(0, 255, 136, 0.1);
         }
 
-        .btn {
-            background: var(--primary);
+        .action-btn {
+            background: var(--neon-green);
             color: #000;
             border: none;
-            padding: 15px 40px;
+            padding: 1.2rem 4rem;
             font-size: 1.5rem;
-            font-weight: bold;
-            cursor: pointer;
+            font-weight: 950;
             border-radius: 50px;
-            margin-top: 20px;
+            cursor: pointer;
+            text-transform: uppercase;
+            margin-top: 2rem;
+            transition: 0.3s;
         }
 
-        .btn:hover {
+        .action-btn:hover {
             transform: scale(1.1);
+            box-shadow: 0 0 40px var(--neon-green);
         }
 
-        #hud {
+        .hud {
             position: absolute;
             top: 20px;
+            left: 0;
             width: 100%;
+            height: 60px;
             display: flex;
-            justify-content: space-around;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
             pointer-events: none;
             z-index: 50;
+            transition: 0.3s;
         }
 
         .hud-box {
-            background: rgba(0, 0, 0, 0.7);
-            padding: 10px 20px;
-            border: 2px solid var(--primary);
-            border-radius: 10px;
+            background: var(--hud-bg);
+            border-bottom: 3px solid var(--p-color);
+            padding: 10px 30px;
+            border-radius: 5px;
+            font-weight: 900;
             font-size: 1.2rem;
-            font-weight: bold;
+        }
+
+        .main-score {
+            font-size: 2.5rem;
+            font-weight: 950;
+            text-shadow: 0 0 10px var(--neon-green);
+        }
+
+        .feedback-msg {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 6rem;
+            font-weight: 900;
+            font-style: italic;
+            z-index: 60;
+            text-transform: uppercase;
+            color: #fff;
+            text-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            pointer-events: none;
+            opacity: 0;
+            transition: 0.2s;
         }
 
         .hidden {
             display: none !important;
         }
+
+        @keyframes flash {
+            0% {
+                background: #fff;
+            }
+
+            100% {
+                background: var(--pitch);
+            }
+        }
+
+        .flash-active {
+            animation: flash 0.3s ease-out;
+        }
     </style>
 </head>
 
-<body>
-    <div id="game-container">
-        <!-- Tópico 1 e 3: Arena -->
+<body id="body">
+    <div id="container">
+        <!-- Tópico 1 e 4: Canvas -->
         <canvas id="gameCanvas"></canvas>
 
-        <div id="hud" class="hidden">
-            <div class="hud-box" id="hud-team">PALMEIRAS</div>
-            <div class="hud-box" id="hud-phase">OITAVAS</div>
-            <div class="hud-box">GOLS: <span id="hud-score">0</span> / 3</div>
+        <div id="hud" class="hud hidden">
+            <div class="hud-box" id="p-tag">PALMEIRAS</div>
+            <div class="main-score"><span id="p-score">0</span> : <span id="c-score">0</span></div>
+            <div class="hud-box" id="c-tag">CPU</div>
         </div>
 
-        <!-- Tópico 2: Menu Inicial -->
+        <div id="feedback" class="feedback-msg">GOOOL!</div>
+
+        <!-- Tópico 3: Menu -->
         <div id="screen-menu" class="screen active">
-            <h1>BRASILEIRÃO <span>ARENA 2026</span></h1>
-            <p>ESCOLHA SEU TIME:</p>
-            <div class="team-grid" id="team-list"></div>
+            <h1>PENALTY <span>STRIKE 2026</span></h1>
+
+            <div class="diff-selector">
+                <button class="diff-btn active" data-diff="normal">NORMAL</button>
+                <button class="diff-btn" data-diff="hard">HARD</button>
+                <button class="diff-btn" data-diff="super">SUPER HARD</button>
+            </div>
+
+            <p>ESCOLHA SEU ESCUDO:</p>
+            <div class="team-grid" id="team-grid"></div>
         </div>
 
-        <!-- Tópico 6: Fases -->
+        <!-- Tópico 10: Fases -->
         <div id="screen-intro" class="screen">
-            <h1 id="phase-title">OITAVAS DE FINAL</h1>
-            <button class="btn" id="start-btn">ENTRAR EM CAMPO</button>
+            <p id="phase-name" style="font-weight: 900; opacity: 0.5;">OITAVAS DE FINAL</p>
+            <h1 id="match-title">JOGADOR VS CPU</h1>
+            <button class="action-btn" id="start-btn">ENTRAR EM CAMPO</button>
         </div>
 
-        <!-- Tópico 5: Vitória -->
-        <div id="screen-victory" class="screen">
-            <h1>VITÓRIA!</h1>
-            <p id="adv-msg">RUMO ÀS QUARTAS</p>
-            <button class="btn" id="advance-btn">AVANÇAR FASE</button>
+        <!-- Tópico 19: Game Over -->
+        <div id="screen-result" class="screen">
+            <h1 id="result-title">PARABÉNS!</h1>
+            <p id="result-sub">VOCÊ AVANÇOU DE FASE</p>
+            <button class="action-btn" id="next-btn">PRÓXIMA FASE</button>
+            <button class="action-btn hidden" id="retry-btn" onclick="location.reload()">TENTAR NOVAMENTE</button>
         </div>
 
-        <!-- Game Over -->
+        <!-- Finale -->
         <div id="screen-finale" class="screen">
-            <h1>🏆 CAMPEÃO NACIONAL 🏆</h1>
-            <h2 id="final-team">TIME</h2>
-            <button class="btn" onclick="location.reload()">VOLTAR AO MENU</button>
+            <p style="font-size: 5rem;">🏆</p>
+            <h1>LENDA DO <span>BRASILEIRÃO 2026</span></h1>
+            <h2 id="champ-name">TIME</h2>
+            <button class="action-btn" onclick="location.reload()">MENU PRINCIPAL</button>
         </div>
     </div>
 
     <script>
         /**
-         * MOTOR DE MOVIMENTO E LÓGICA TOTAL
-         * PROTOCOLO DE CONSTRUÇÃO EM ARQUIVO ÚNICO
+         * BRASILEIRÃO PENALTY STRIKE 2026
+         * PROTOCOLO DE ENGENHARIA 20 PONTOS
          */
 
-        const teams = [
+        const TEAMS = [
             { name: "Palmeiras", color: "#006400" }, { name: "Flamengo", color: "#ff0000" },
-            { name: "Corinthians", color: "#ffffff" }, { name: "Santos", color: "#ffffff" },
-            { name: "Vasco", color: "#ffffff" }, { name: "Botafogo", color: "#ffffff" },
-            { name: "Fluminense", color: "#800020" }, { name: "São Paulo", color: "#ff0000" },
-            { name: "Grêmio", color: "#00aae4" }, { name: "Internacional", color: "#e30613" },
-            { name: "Cruzeiro", color: "#003399" }, { name: "Atlético-MG", color: "#000000" },
-            { name: "Bahia", color: "#005baa" }, { name: "Fortaleza", color: "#001e9c" },
-            { name: "Vitoria", color: "#ff0000" }, { name: "Athletico-PR", color: "#cc0000" },
-            { name: "Cuiabá", color: "#ffd700" }, { name: "Mirassol", color: "#ffff00" },
-            { name: "Remo", color: "#000080" }, { name: "Ceará", color: "#000000" }
+            { name: "Botafogo", color: "#000000" }, { name: "Fortaleza", color: "#001e9c" },
+            { name: "São Paulo", color: "#ff0000" }, { name: "Internacional", color: "#e30613" },
+            { name: "Cruzeiro", color: "#003399" }, { name: "Bahia", color: "#005baa" },
+            { name: "Corinthians", color: "#ffffff" }, { name: "Vasco", color: "#000000" },
+            { name: "Grêmio", color: "#00aae4" }, { name: "Atlético-MG", color: "#000000" },
+            { name: "Fluminense", color: "#800020" }, { name: "Athletico-PR", color: "#cc0000" },
+            { name: "Vitória", color: "#ff0000" }, { name: "Bragantino", color: "#ffffff" },
+            { name: "Santos", color: "#ffffff" }, { name: "Coritiba", color: "#006400" },
+            { name: "Mirassol", color: "#ffff00" }, { name: "Remo", color: "#000080" }
         ];
 
-        const stages = ["Oitavas de Final", "Quartas de Final", "Semifinal", "Grande Final"];
+        const STAGES = ["Oitavas de Final", "Quartas de Final", "Semifinal", "Grande Final"];
 
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        canvas.width = 800;
-        canvas.height = 600;
+        let cw, ch;
 
-        // Tópico 1: Estado das Teclas
-        const teclasPressionadas = {};
-        window.addEventListener('keydown', (e) => teclasPressionadas[e.code] = true);
-        window.addEventListener('keyup', (e) => teclasPressionadas[e.code] = false);
+        // Tópico 2: Estado de Teclas
+        const keys = {};
+        window.onkeydown = (e) => keys[e.code] = true;
+        window.onkeyup = (e) => keys[e.code] = false;
 
-        // Estado do Jogo
-        let gameState = 'MENU';
+        // Tópico 1: Máquina de Estados (FSM)
+        let state = 'MENU'; // MENU, INTRO, PLAYING, RESULT, FINALE
+        let subState = 'IDLE'; // IDLE, CHARGING, SHOOTING, DEFENDING
         let playerTeam = null;
+        let cpuTeam = null;
+        let difficulty = 'normal';
         let stageIdx = 0;
-        let score = 0;
+        let pScore = 0;
+        let cScore = 0;
+        let turn = 'PLAYER'; // PLAYER ou AI
 
-        const player = { x: 400, y: 500, r: 20, speed: 5 };
-        const ball = { x: 400, y: 500, r: 10, vy: 0, attached: true };
-        const goalie = { x: 400, y: 50, w: 100, h: 20, speed: 3 };
-        const goal = { x: 300, y: 0, w: 200, h: 20 };
+        // Game Objects
+        const ball = { x: 0, y: 0, r: 15, startX: 0, startY: 0, targetX: 0, targetY: 0, alpha: 0, active: false };
+        const aim = { x: 0, y: 0, r: 25, t: 0 };
+        const goalie = { x: 0, y: 0, w: 100, h: 40, targetX: 0 };
+        const player = { x: 0, y: 0 };
 
-        // UI Setup
-        const teamList = document.getElementById('team-list');
-        teams.forEach(t => {
-            const btn = document.createElement('button');
-            btn.className = 'team-btn';
-            btn.innerText = t.name.toUpperCase();
-            btn.onclick = () => selectTeam(t);
-            teamList.appendChild(btn);
-        });
+        function init() {
+            resize();
+            window.addEventListener('resize', resize);
 
-        document.getElementById('start-btn').onclick = startMatch;
-        document.getElementById('advance-btn').onclick = nextStage;
+            // Build Menu
+            const grid = document.getElementById('team-grid');
+            TEAMS.forEach(team => {
+                const btn = document.createElement('button');
+                btn.className = 'team-btn';
+                btn.innerText = team.name;
+                btn.onclick = () => selectTeam(team);
+                grid.appendChild(btn);
+            });
 
-        function selectTeam(t) {
-            playerTeam = t;
-            document.documentElement.style.setProperty('--primary', t.color);
-            document.getElementById('hud-team').innerText = t.name.toUpperCase();
+            document.querySelectorAll('.diff-btn').forEach(btn => {
+                btn.onclick = () => {
+                    document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    difficulty = btn.dataset.diff;
+                };
+            });
+
+            document.getElementById('start-btn').onclick = startMatch;
+            document.getElementById('next-btn').onclick = nextStage;
+
+            gameLoop();
+        }
+
+        function resize() {
+            cw = canvas.width = window.innerWidth;
+            ch = canvas.height = window.innerHeight;
+            if (ch > 720) ch = canvas.height = 720;
+            if (cw > 1280) cw = canvas.width = 1280;
+        }
+
+        function selectTeam(team) {
+            playerTeam = team;
+            document.documentElement.style.setProperty('--p-color', team.color);
+            prepareIntro();
+        }
+
+        function prepareIntro() {
+            cpuTeam = TEAMS[Math.floor(Math.random() * TEAMS.length)];
+            while (cpuTeam.name === playerTeam.name) cpuTeam = TEAMS[Math.floor(Math.random() * TEAMS.length)];
+
+            document.getElementById('phase-name').innerText = STAGES[stageIdx].toUpperCase();
+            document.getElementById('match-title').innerText = `${playerTeam.name.toUpperCase()} VS ${cpuTeam.name.toUpperCase()}`;
             showScreen('screen-intro');
-            document.getElementById('phase-title').innerText = stages[stageIdx].toUpperCase();
         }
 
         function showScreen(id) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
+            if (id !== 'none') document.getElementById(id).classList.add('active');
+            state = id.split('-')[1]?.toUpperCase() || 'PLAYING';
+            if (id === 'none') {
+                canvas.focus(); // Tópico 20
+                state = 'PLAYING';
+            }
         }
 
         function startMatch() {
-            gameState = 'PLAYING';
             showScreen('none');
             document.getElementById('hud').classList.remove('hidden');
-            document.getElementById('hud-phase').innerText = stages[stageIdx].substring(0, 7).toUpperCase();
-            resetPositions();
+            document.getElementById('p-tag').innerText = playerTeam.name.substring(0, 3).toUpperCase();
+            document.getElementById('c-tag').innerText = cpuTeam.name.substring(0, 3).toUpperCase();
+
+            pScore = 0; cScore = 0; // Tópico 11: Reset Obrigatório
+            updateScoreUI();
+            resetTurn();
         }
 
-        function resetPositions() {
-            player.x = 400;
-            player.y = 500;
-            ball.y = player.y - 25;
-            ball.x = player.x;
-            ball.vy = 0;
-            ball.attached = true;
+        function resetTurn() {
+            subState = 'IDLE';
+            ball.active = false;
+            ball.alpha = 0;
+            ball.x = cw / 2;
+            ball.y = ch * 0.85;
+            ball.startX = ball.x;
+            ball.startY = ball.y;
 
-            // Tópico 7: Dificuldade
-            goalie.x = 400;
-            goalie.speed = 3 + (stageIdx * 1.5);
+            aim.x = cw / 2;
+            aim.y = ch * 0.3;
+
+            goalie.x = cw / 2 - 50;
+            goalie.y = ch * 0.15;
+            goalie.targetX = goalie.x;
+
+            document.getElementById('feedback').style.opacity = '0';
         }
 
-        function update() {
-            if (gameState !== 'PLAYING') return;
-
-            // Tópico 1: Movimento Jogador
-            if (teclasPressionadas['KeyW'] || teclasPressionadas['ArrowUp']) player.y -= player.speed;
-            if (teclasPressionadas['KeyS'] || teclasPressionadas['ArrowDown']) player.y += player.speed;
-            if (teclasPressionadas['KeyA'] || teclasPressionadas['ArrowLeft']) player.x -= player.speed;
-            if (teclasPressionadas['KeyD'] || teclasPressionadas['ArrowRight']) player.x += player.speed;
-
-            // Bounds
-            player.x = Math.max(20, Math.min(780, player.x));
-            player.y = Math.max(100, Math.min(580, player.y));
-
-            // Tópico 4: Chute (Espaço)
-            if (teclasPressionadas['Space'] && ball.attached) {
-                ball.attached = false;
-                ball.vy = -10;
-            }
-
-            if (ball.attached) {
-                ball.x = player.x;
-                ball.y = player.y - 25;
-            } else {
-                ball.y += ball.vy;
-
-                // Tópico 4: Colisão Goleiro
-                if (ball.y < goalie.y + goalie.h && ball.y > goalie.y &&
-                    ball.x > goalie.x && ball.x < goalie.x + goalie.w) {
-                    ball.attached = true;
-                    ball.vy = 0;
-                }
-
-                // Tópico 4: GOL
-                if (ball.y < 0) {
-                    if (ball.x > goal.x && ball.x < goal.x + goal.w) {
-                        makeGoal();
-                    } else {
-                        resetPositions();
-                    }
-                }
-            }
-
-            // Tópico 7: Movimento Goleiro (IA segue a bola)
-            let targetX = ball.attached ? player.x : ball.x;
-            if (goalie.x + goalie.w / 2 < targetX) goalie.x += goalie.speed;
-            if (goalie.x + goalie.w / 2 > targetX) goalie.x -= goalie.speed;
-            goalie.x = Math.max(0, Math.min(canvas.width - goalie.w, goalie.x));
-        }
-
-        function makeGoal() {
-            score++;
-            document.getElementById('hud-score').innerText = score;
-
-            // Tópico 8: Flash Efeito
-            document.body.style.background = "#fff";
-            setTimeout(() => document.body.style.background = "#000", 100);
-
-            if (score >= 3) {
-                gameState = 'VICTORY';
-                const next = stages[stageIdx + 1];
-                if (next) {
-                    document.getElementById('adv-msg').innerText = "RUMO ÀS " + next.toUpperCase();
-                    showScreen('screen-victory');
-                } else {
-                    document.getElementById('final-team').innerText = playerTeam.name.toUpperCase();
-                    showScreen('screen-finale');
-                }
-            } else {
-                resetPositions();
-            }
-        }
-
-        function nextStage() {
-            stageIdx++;
-            // Tópico 6: Reset Placar
-            score = 0;
-            document.getElementById('hud-score').innerText = score;
-            showScreen('screen-intro');
-            document.getElementById('phase-title').innerText = stages[stageIdx].toUpperCase();
-        }
-
-        function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            if (gameState === 'MENU') return;
-
-            // Goal
-            ctx.fillStyle = "#fff";
-            ctx.fillRect(goal.x, goal.y, goal.w, goal.h);
-
-            // Goleiro
-            ctx.fillStyle = "#ffff00";
-            ctx.fillRect(goalie.x, goalie.y, goalie.w, goalie.h);
-
-            // Player (Tópico 2)
-            ctx.fillStyle = playerTeam ? playerTeam.color : "#fff";
-            ctx.beginPath();
-            ctx.arc(player.x, player.y, player.r, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.strokeStyle = "#fff"; ctx.stroke();
-
-            // Ball
-            ctx.fillStyle = "#fff";
-            ctx.beginPath();
-            ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
-            ctx.fill();
-        }
-
+        // Tópico 1: Loop de Jogo
         function gameLoop() {
             update();
             draw();
             requestAnimationFrame(gameLoop);
         }
 
-        // Tópico 1: Iniciar Loop
-        gameLoop();
+        function update() {
+            if (state !== 'PLAYING') return;
+
+            // Tópico 2: Movimentação (WASD/Setas)
+            if (subState === 'IDLE' || subState === 'CHARGING') {
+                const moveSpeed = 6;
+                if (keys['ArrowUp'] || keys['KeyW']) aim.y -= moveSpeed;
+                if (keys['ArrowDown'] || keys['KeyS']) aim.y += moveSpeed;
+                if (keys['ArrowLeft'] || keys['KeyA']) aim.x -= moveSpeed;
+                if (keys['ArrowRight'] || keys['KeyD']) aim.x += moveSpeed;
+
+                // Tópico 5: Oscilação Mira
+                const oscMult = { 'normal': 1, 'hard': 2.5, 'super': 5 }[difficulty];
+                aim.t += 0.05;
+                aim.x += Math.sin(aim.t) * (2 * oscMult);
+                aim.y += Math.cos(aim.t * 0.8) * (1 * oscMult);
+
+                // Bounds
+                aim.x = Math.max(cw * 0.25, Math.min(cw * 0.75, aim.x));
+                aim.y = Math.max(ch * 0.1, Math.min(ch * 0.45, aim.y));
+
+                // Tópico 6: Chute (Espaço)
+                if (keys['Space']) {
+                    kick();
+                }
+            }
+
+            // Tópico 6: Física Lerp (500ms)
+            if (ball.active) {
+                ball.alpha += 0.033; // ~500ms at 60fps
+                if (ball.alpha >= 1) {
+                    ball.alpha = 1;
+                    validateResult();
+                }
+                ball.x = ball.startX + (ball.targetX - ball.startX) * ball.alpha;
+                ball.y = ball.startY + (ball.targetY - ball.startY) * ball.alpha;
+            }
+
+            // Tópico 7: IA Goleiro
+            if (turn === 'PLAYER') {
+                const reactionSpeed = { 'normal': 0.05, 'hard': 0.12, 'super': 0.8 }[difficulty];
+                const delay = { 'normal': 800, 'hard': 400, 'super': 0 }[difficulty];
+
+                // Track with delay or prediction
+                if (difficulty === 'super') {
+                    goalie.targetX = aim.x - goalie.w / 2;
+                } else {
+                    setTimeout(() => {
+                        goalie.targetX = aim.x - goalie.w / 2;
+                    }, delay);
+                }
+                goalie.x += (goalie.targetX - goalie.x) * reactionSpeed;
+            } else {
+                // Jogador é o Goleiro (Tópico 8)
+                const gSpeed = 8;
+                if (keys['ArrowLeft'] || keys['KeyA']) goalie.x -= gSpeed;
+                if (keys['ArrowRight'] || keys['KeyD']) goalie.x += gSpeed;
+            }
+
+            goalie.x = Math.max(cw * 0.25, Math.min(cw * 0.75 - goalie.w, goalie.x));
+        }
+
+        function kick() {
+            if (ball.active) return;
+            ball.active = true;
+            ball.alpha = 0;
+            ball.startX = ball.x;
+            ball.startY = ball.y;
+            ball.targetX = aim.x;
+            ball.targetY = aim.y;
+            subState = 'SHOOTING';
+
+            if (turn === 'AI') {
+                // Tópico 8: IA batedora chuta
+                const tx = cw * 0.3 + Math.random() * (cw * 0.4);
+                const ty = ch * 0.15 + Math.random() * (ch * 0.25);
+                ball.targetX = tx;
+                ball.targetY = ty;
+            }
+        }
+
+        function validateResult() {
+            ball.active = false;
+
+            // Tópico 15: Hitbox AABB
+            const saved = (ball.x > goalie.x && ball.x < goalie.x + goalie.w &&
+                ball.y > goalie.y && ball.y < goalie.y + goalie.h);
+
+            // Area do Gol
+            const inGoal = (ball.x > cw * 0.28 && ball.x < cw * 0.72 && ball.y < ch * 0.48);
+
+            let result = "MISS";
+            if (saved) {
+                result = "DEFENSE";
+            } else if (inGoal) {
+                result = "GOAL";
+                if (turn === 'PLAYER') pScore++; else cScore++;
+            }
+
+            showFeedback(result);
+            updateScoreUI();
+
+            // Tópico 9: Condição de Vitória (3 Gols)
+            setTimeout(() => {
+                if (pScore >= 3 || cScore >= 3) {
+                    finalizeMatch();
+                } else {
+                    swapTurn();
+                }
+            }, 1500);
+        }
+
+        function showFeedback(type) {
+            const el = document.getElementById('feedback');
+            const messages = { 'GOAL': 'GOOOL!', 'DEFENSE': 'DEFENDEU!', 'MISS': 'PARA FORA!' };
+            el.innerText = messages[type];
+            el.style.opacity = '1';
+
+            if (type === 'GOAL') {
+                document.getElementById('body').classList.add('flash-active');
+                setTimeout(() => document.getElementById('body').classList.remove('flash-active'), 300);
+            }
+        }
+
+        function updateScoreUI() {
+            document.getElementById('p-score').innerText = pScore;
+            document.getElementById('c-score').innerText = cScore;
+        }
+
+        function swapTurn() {
+            turn = turn === 'PLAYER' ? 'AI' : 'PLAYER';
+            resetTurn();
+            if (turn === 'AI') {
+                setTimeout(kick, 1000); // IA chuta após 1s
+            }
+        }
+
+        function finalizeMatch() {
+            showScreen('screen-result');
+            document.getElementById('hud').classList.add('hidden');
+
+            if (pScore >= 3) {
+                document.getElementById('result-title').innerText = "VITÓRIA!";
+                const next = STAGES[stageIdx + 1];
+                document.getElementById('result-sub').innerText = next ? "RUMO ÀS " + next.toUpperCase() : "VOCÊ É O CAMPEÃO!";
+                document.getElementById('next-btn').classList.remove('hidden');
+                document.getElementById('retry-btn').classList.add('hidden');
+            } else {
+                document.getElementById('result-title').innerText = "ELIMINADO!";
+                document.getElementById('result-sub').innerText = "O SONHO DO TÍTULO ADIADO.";
+                document.getElementById('next-btn').classList.add('hidden');
+                document.getElementById('retry-btn').classList.remove('hidden');
+            }
+        }
+
+        function nextStage() {
+            stageIdx++;
+            if (stageIdx >= STAGES.length) {
+                document.getElementById('champ-name').innerText = playerTeam.name.toUpperCase();
+                showScreen('screen-finale');
+            } else {
+                prepareIntro();
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, cw, ch);
+            if (state === 'MENU' || state === 'INTRO') return;
+
+            // Tópico 4: Cenário (Pitch)
+            ctx.strokeStyle = "rgba(255,255,255,0.2)";
+            ctx.lineWidth = 2;
+            ctx.strokeRect(cw * 0.25, ch * 0.1, cw * 0.5, ch * 0.8);
+
+            // Área
+            ctx.strokeRect(cw * 0.35, ch * 0.1, cw * 0.3, ch * 0.2);
+            ctx.beginPath();
+            ctx.arc(cw / 2, ch * 0.85, 5, 0, Math.PI * 2);
+            ctx.fillStyle = "#fff";
+            ctx.fill();
+
+            // Gol
+            ctx.strokeStyle = "#fff";
+            ctx.lineWidth = 8;
+            ctx.strokeRect(cw * 0.28, ch * 0.1, cw * 0.44, ch * 0.05);
+            // Rede
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = "rgba(255,255,255,0.3)";
+            for (let i = cw * 0.28; i < cw * 0.72; i += 10) {
+                ctx.beginPath(); ctx.moveTo(i, ch * 0.1); ctx.lineTo(i, ch * 0.15); ctx.stroke();
+            }
+
+            // Goleiro (IA ou Player)
+            ctx.fillStyle = turn === 'PLAYER' ? cpuTeam.color : playerTeam.color;
+            ctx.fillRect(goalie.x, goalie.y, goalie.w, goalie.h);
+            ctx.strokeStyle = "#fff"; ctx.lineWidth = 2;
+            ctx.strokeRect(goalie.x, goalie.y, goalie.w, goalie.h);
+
+            // Mira (Tópico 5)
+            if (turn === 'PLAYER' || (turn === 'AI' && !ball.active)) {
+                ctx.beginPath();
+                ctx.arc(aim.x, aim.y, aim.r, 0, Math.PI * 2);
+                ctx.strokeStyle = turn === 'PLAYER' ? playerTeam.color : "#fff";
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                // Crosshair
+                ctx.beginPath(); ctx.moveTo(aim.x - 10, aim.y); ctx.lineTo(aim.x + 10, aim.y); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(aim.x, aim.y - 10); ctx.lineTo(aim.x, aim.y + 10); ctx.stroke();
+            }
+
+            // Bola
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
+            ctx.fillStyle = "#fff";
+            ctx.fill();
+            ctx.strokeStyle = "#000"; ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+
+        window.onload = init;
     </script>
 </body>
 
