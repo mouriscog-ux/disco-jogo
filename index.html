@@ -4,68 +4,380 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BRASILEIRÃO ARENA 2026 - Top-Down</title>
-    <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+    <title>BRASILEIRÃO ARENA 2026 - FIX TOTAL</title>
+    <style>
+        :root {
+            --primary: #00ff88;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: sans-serif;
+        }
+
+        body {
+            background: #000;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background: #0a0a0a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        canvas {
+            background: #1a3d1d;
+            border: 4px solid #fff;
+            display: block;
+        }
+
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 100;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 2rem;
+        }
+
+        h1 span {
+            color: var(--primary);
+        }
+
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            background: #111;
+        }
+
+        .team-btn {
+            padding: 15px;
+            border: none;
+            background: #222;
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .team-btn:hover {
+            background: var(--primary);
+            color: #000;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: #000;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 50px;
+            margin-top: 20px;
+        }
+
+        .btn:hover {
+            transform: scale(1.1);
+        }
+
+        #hud {
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            pointer-events: none;
+            z-index: 50;
+        }
+
+        .hud-box {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 20px;
+            border: 2px solid var(--primary);
+            border-radius: 10px;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
 </head>
 
 <body>
     <div id="game-container">
-        <canvas id="game-canvas"></canvas>
+        <!-- Tópico 1 e 3: Arena -->
+        <canvas id="gameCanvas"></canvas>
 
-        <div id="ui-layer">
-            <!-- Screen: Menu -->
-            <div id="menu-screen" class="screen active">
-                <div class="logo">
-                    <h1>BRASILEIRÃO <span>ARENA 2026</span></h1>
-                    <p class="type">TOP-DOWN STRIKER</p>
-                </div>
+        <div id="hud" class="hidden">
+            <div class="hud-box" id="hud-team">PALMEIRAS</div>
+            <div class="hud-box" id="hud-phase">OITAVAS</div>
+            <div class="hud-box">GOLS: <span id="hud-score">0</span> / 3</div>
+        </div>
 
-                <div class="team-selection">
-                    <p>ESCOLHA SEU TIME:</p>
-                    <div id="team-grid" class="team-grid"></div>
-                </div>
-            </div>
+        <!-- Tópico 2: Menu Inicial -->
+        <div id="screen-menu" class="screen active">
+            <h1>BRASILEIRÃO <span>ARENA 2026</span></h1>
+            <p>ESCOLHA SEU TIME:</p>
+            <div class="team-grid" id="team-list"></div>
+        </div>
 
-            <!-- Screen: Phase Intro -->
-            <div id="intro-screen" class="screen">
-                <h2 id="phase-title">OITAVAS DE FINAL</h2>
-                <div class="match-info">
-                    <div id="p-team-card" class="team-card">TIME</div>
-                    <div class="vs">VS</div>
-                    <div class="team-card">ZAGUEIROS</div>
-                </div>
-                <button id="start-btn" class="action-btn">ENTRAR EM CAMPO</button>
-            </div>
+        <!-- Tópico 6: Fases -->
+        <div id="screen-intro" class="screen">
+            <h1 id="phase-title">OITAVAS DE FINAL</h1>
+            <button class="btn" id="start-btn">ENTRAR EM CAMPO</button>
+        </div>
 
-            <!-- HUD -->
-            <div id="hud" class="hud hidden">
-                <div class="top-bar">
-                    <div id="phase-tag" class="tag">OITAVAS</div>
-                    <div class="score-display">GOLS: <span id="current-score">0</span> / 3</div>
-                    <div id="team-name-tag" class="tag">PALMEIRAS</div>
-                </div>
-                <div class="controls-hint">WASD PARA MOVER | ESPAÇO PARA CHUTAR PERTO DO GOL</div>
-            </div>
+        <!-- Tópico 5: Vitória -->
+        <div id="screen-victory" class="screen">
+            <h1>VITÓRIA!</h1>
+            <p id="adv-msg">RUMO ÀS QUARTAS</p>
+            <button class="btn" id="advance-btn">AVANÇAR FASE</button>
+        </div>
 
-            <!-- Screen: Result/Victory -->
-            <div id="result-screen" class="screen">
-                <h1 id="result-text">VITÓRIA!</h1>
-                <p id="next-phase-info">RUMO ÀS QUARTAS</p>
-                <button id="advance-btn" class="action-btn">PRÓXIMA FASE</button>
-                <button id="retry-btn" class="action-btn hidden" onclick="location.reload()">TENTAR NOVAMENTE</button>
-            </div>
-
-            <!-- Screen: Champion -->
-            <div id="finale-screen" class="screen">
-                <div class="trophy">🏆</div>
-                <h1>CAMPEÃO NACIONAL</h1>
-                <h2 id="champ-team">TIME</h2>
-                <button onclick="location.reload()" class="action-btn">MENU INICIAL</button>
-            </div>
+        <!-- Game Over -->
+        <div id="screen-finale" class="screen">
+            <h1>🏆 CAMPEÃO NACIONAL 🏆</h1>
+            <h2 id="final-team">TIME</h2>
+            <button class="btn" onclick="location.reload()">VOLTAR AO MENU</button>
         </div>
     </div>
-    <script src="game.js"></script>
+
+    <script>
+        /**
+         * MOTOR DE MOVIMENTO E LÓGICA TOTAL
+         * PROTOCOLO DE CONSTRUÇÃO EM ARQUIVO ÚNICO
+         */
+
+        const teams = [
+            { name: "Palmeiras", color: "#006400" }, { name: "Flamengo", color: "#ff0000" },
+            { name: "Corinthians", color: "#ffffff" }, { name: "Santos", color: "#ffffff" },
+            { name: "Vasco", color: "#ffffff" }, { name: "Botafogo", color: "#ffffff" },
+            { name: "Fluminense", color: "#800020" }, { name: "São Paulo", color: "#ff0000" },
+            { name: "Grêmio", color: "#00aae4" }, { name: "Internacional", color: "#e30613" },
+            { name: "Cruzeiro", color: "#003399" }, { name: "Atlético-MG", color: "#000000" },
+            { name: "Bahia", color: "#005baa" }, { name: "Fortaleza", color: "#001e9c" },
+            { name: "Vitoria", color: "#ff0000" }, { name: "Athletico-PR", color: "#cc0000" },
+            { name: "Cuiabá", color: "#ffd700" }, { name: "Mirassol", color: "#ffff00" },
+            { name: "Remo", color: "#000080" }, { name: "Ceará", color: "#000000" }
+        ];
+
+        const stages = ["Oitavas de Final", "Quartas de Final", "Semifinal", "Grande Final"];
+
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 800;
+        canvas.height = 600;
+
+        // Tópico 1: Estado das Teclas
+        const teclasPressionadas = {};
+        window.addEventListener('keydown', (e) => teclasPressionadas[e.code] = true);
+        window.addEventListener('keyup', (e) => teclasPressionadas[e.code] = false);
+
+        // Estado do Jogo
+        let gameState = 'MENU';
+        let playerTeam = null;
+        let stageIdx = 0;
+        let score = 0;
+
+        const player = { x: 400, y: 500, r: 20, speed: 5 };
+        const ball = { x: 400, y: 500, r: 10, vy: 0, attached: true };
+        const goalie = { x: 400, y: 50, w: 100, h: 20, speed: 3 };
+        const goal = { x: 300, y: 0, w: 200, h: 20 };
+
+        // UI Setup
+        const teamList = document.getElementById('team-list');
+        teams.forEach(t => {
+            const btn = document.createElement('button');
+            btn.className = 'team-btn';
+            btn.innerText = t.name.toUpperCase();
+            btn.onclick = () => selectTeam(t);
+            teamList.appendChild(btn);
+        });
+
+        document.getElementById('start-btn').onclick = startMatch;
+        document.getElementById('advance-btn').onclick = nextStage;
+
+        function selectTeam(t) {
+            playerTeam = t;
+            document.documentElement.style.setProperty('--primary', t.color);
+            document.getElementById('hud-team').innerText = t.name.toUpperCase();
+            showScreen('screen-intro');
+            document.getElementById('phase-title').innerText = stages[stageIdx].toUpperCase();
+        }
+
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        function startMatch() {
+            gameState = 'PLAYING';
+            showScreen('none');
+            document.getElementById('hud').classList.remove('hidden');
+            document.getElementById('hud-phase').innerText = stages[stageIdx].substring(0, 7).toUpperCase();
+            resetPositions();
+        }
+
+        function resetPositions() {
+            player.x = 400;
+            player.y = 500;
+            ball.y = player.y - 25;
+            ball.x = player.x;
+            ball.vy = 0;
+            ball.attached = true;
+
+            // Tópico 7: Dificuldade
+            goalie.x = 400;
+            goalie.speed = 3 + (stageIdx * 1.5);
+        }
+
+        function update() {
+            if (gameState !== 'PLAYING') return;
+
+            // Tópico 1: Movimento Jogador
+            if (teclasPressionadas['KeyW'] || teclasPressionadas['ArrowUp']) player.y -= player.speed;
+            if (teclasPressionadas['KeyS'] || teclasPressionadas['ArrowDown']) player.y += player.speed;
+            if (teclasPressionadas['KeyA'] || teclasPressionadas['ArrowLeft']) player.x -= player.speed;
+            if (teclasPressionadas['KeyD'] || teclasPressionadas['ArrowRight']) player.x += player.speed;
+
+            // Bounds
+            player.x = Math.max(20, Math.min(780, player.x));
+            player.y = Math.max(100, Math.min(580, player.y));
+
+            // Tópico 4: Chute (Espaço)
+            if (teclasPressionadas['Space'] && ball.attached) {
+                ball.attached = false;
+                ball.vy = -10;
+            }
+
+            if (ball.attached) {
+                ball.x = player.x;
+                ball.y = player.y - 25;
+            } else {
+                ball.y += ball.vy;
+
+                // Tópico 4: Colisão Goleiro
+                if (ball.y < goalie.y + goalie.h && ball.y > goalie.y &&
+                    ball.x > goalie.x && ball.x < goalie.x + goalie.w) {
+                    ball.attached = true;
+                    ball.vy = 0;
+                }
+
+                // Tópico 4: GOL
+                if (ball.y < 0) {
+                    if (ball.x > goal.x && ball.x < goal.x + goal.w) {
+                        makeGoal();
+                    } else {
+                        resetPositions();
+                    }
+                }
+            }
+
+            // Tópico 7: Movimento Goleiro (IA segue a bola)
+            let targetX = ball.attached ? player.x : ball.x;
+            if (goalie.x + goalie.w / 2 < targetX) goalie.x += goalie.speed;
+            if (goalie.x + goalie.w / 2 > targetX) goalie.x -= goalie.speed;
+            goalie.x = Math.max(0, Math.min(canvas.width - goalie.w, goalie.x));
+        }
+
+        function makeGoal() {
+            score++;
+            document.getElementById('hud-score').innerText = score;
+
+            // Tópico 8: Flash Efeito
+            document.body.style.background = "#fff";
+            setTimeout(() => document.body.style.background = "#000", 100);
+
+            if (score >= 3) {
+                gameState = 'VICTORY';
+                const next = stages[stageIdx + 1];
+                if (next) {
+                    document.getElementById('adv-msg').innerText = "RUMO ÀS " + next.toUpperCase();
+                    showScreen('screen-victory');
+                } else {
+                    document.getElementById('final-team').innerText = playerTeam.name.toUpperCase();
+                    showScreen('screen-finale');
+                }
+            } else {
+                resetPositions();
+            }
+        }
+
+        function nextStage() {
+            stageIdx++;
+            // Tópico 6: Reset Placar
+            score = 0;
+            document.getElementById('hud-score').innerText = score;
+            showScreen('screen-intro');
+            document.getElementById('phase-title').innerText = stages[stageIdx].toUpperCase();
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (gameState === 'MENU') return;
+
+            // Goal
+            ctx.fillStyle = "#fff";
+            ctx.fillRect(goal.x, goal.y, goal.w, goal.h);
+
+            // Goleiro
+            ctx.fillStyle = "#ffff00";
+            ctx.fillRect(goalie.x, goalie.y, goalie.w, goalie.h);
+
+            // Player (Tópico 2)
+            ctx.fillStyle = playerTeam ? playerTeam.color : "#fff";
+            ctx.beginPath();
+            ctx.arc(player.x, player.y, player.r, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = "#fff"; ctx.stroke();
+
+            // Ball
+            ctx.fillStyle = "#fff";
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Tópico 1: Iniciar Loop
+        gameLoop();
+    </script>
 </body>
 
 </html>
