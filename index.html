@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SÉRIE A NEON STRIKE 2026</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div id="game-container">
+        <div id="flash-effect"></div>
+        <canvas id="game-canvas"></canvas>
+
+        <!-- UI Layers -->
+        <div id="ui-layer">
+            <!-- Screen: Menu -->
+            <div id="menu-screen" class="screen active">
+                <div class="header">
+                    <h1 class="neon-text">NEON <span>STRIKE</span></h1>
+                    <p class="edition">SÉRIE A 2026</p>
+                </div>
+
+                <div class="diff-box">
+                    <button class="diff-btn active" data-diff="normal">NORMAL</button>
+                    <button class="diff-btn" data-diff="hard">HARD</button>
+                    <button class="diff-btn" data-diff="super-hard">SUPER HARD</button>
+                </div>
+
+                <div class="team-selection">
+                    <p>ESCOLHA SEU CLUBE:</p>
+                    <div id="team-grid" class="team-grid"></div>
+                </div>
+            </div>
+
+            <!-- Screen: Phase Intro -->
+            <div id="intro-screen" class="screen">
+                <h2 id="phase-title">OITAVAS DE FINAL</h2>
+                <div class="match-box">
+                    <div id="p-card" class="team-card">TIME</div>
+                    <div class="vs">VS</div>
+                    <div id="c-card" class="team-card">RIVAL</div>
+                </div>
+                <button id="start-btn" class="neon-button">INICIAR PARTIDA</button>
+            </div>
+
+            <!-- Gameplay: Score Overlay -->
+            <div id="hud" class="hud hidden">
+                <div class="central-score">
+                    <span id="p-score">0</span>
+                    <span class="divider">-</span>
+                    <span id="c-score">0</span>
+                </div>
+                <div class="team-tags">
+                    <span id="p-tag">PAL</span>
+                    <span id="c-tag">FLA</span>
+                </div>
+            </div>
+
+            <!-- Screen: Result -->
+            <div id="result-screen" class="screen">
+                <h1 id="result-msg">CONTRATO ASSINADO!</h1>
+                <p id="sub-msg">RUMO ÀS QUARTAS</p>
+                <button id="advance-btn" class="neon-button">PRÓXIMA FASE</button>
+                <button onclick="location.reload()" id="retry-btn" class="neon-button hidden">RECOMEÇAR</button>
+            </div>
+
+            <!-- Screen: Champion -->
+            <div id="finale-screen" class="screen">
+                <div class="trophy">🏆</div>
+                <h1>CAMPEÃO NEON 2026</h1>
+                <h2 id="winner-name">TEAM</h2>
+                <button onclick="location.reload()" class="neon-button">MENU PRINCIPAL</button>
+            </div>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+
+</html>
